@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dragonfist Limitless: Scroll Effects Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#463926;--card:#463926;--ink:#967C5D;--mut:#967C5D;--line:#352C21;--acc:#352C21;--acc2:#E4DA84;--hi:#E4DA84;--head:#E4DA84;color-scheme:dark;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:10px/1.8 "Press Start 2P",monospace}
+main{max-width:900px;margin:0 auto;padding:20px 16px 48px}
+h1{font:400 clamp(16px,4.5vw,28px)/1.4 "Press Start 2P",monospace;margin:8px 0 8px;color:var(--head);text-shadow:2px 2px 0 #352C21}
+h2{font:400 14px/1.5 "Press Start 2P",monospace;margin:0 0 14px;color:var(--head);text-shadow:2px 2px 0 #352C21}
+.sub{color:var(--mut);margin:0 0 18px;max-width:62ch;line-height:2}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.lv{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+label{display:block;font-size:9px;line-height:1.6;color:var(--mut);margin-bottom:6px}
+input,select{width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:10px "Press Start 2P",monospace}
+input:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+h3{font:400 11px/1.6 "Press Start 2P",monospace;margin:18px 0 10px;color:var(--head);text-shadow:2px 2px 0 #352C21}
+.out{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:14px}
+.stat{color:#463926;border-left:4px solid var(--acc);background:var(--acc2);padding:10px 12px;border-radius:0 8px 8px 0}
+.stat b{display:block;font:400 15px/1.4 "Press Start 2P",monospace;word-break:break-word;margin-bottom:4px}
+.stat span{font-size:8px;line-height:1.7;color:#463926}
+.wrap{overflow-x:auto;max-height:420px;overflow-y:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:9px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{position:sticky;top:0;background:var(--card)}
+tr.hi td{background:var(--hi);color:#463926}
+.note{font-size:8px;line-height:1.9;color:var(--mut);margin:12px 0 0}
+.hint{font-size:8px;line-height:1.7;color:var(--mut);margin-top:4px}
+a{color:var(--ink)}
+</style></head><body><main>
+<h1>Scroll Effects</h1>
+<p class="sub">Set your scroll levels, then see what your bonuses would be at any meditation count, boss kill count or day count. Leave a scroll at 0 if you don't have it.</p>
+
+<div class="card" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+<button id="sv_btn" type="button" style="padding:9px 14px;border:2px solid var(--acc);background:#E4DA84;color:#463926;border-radius:8px;font:400 11px "Press Start 2P",monospace;cursor:pointer">Save to .txt</button>
+<button id="ld_btn" type="button" style="padding:9px 14px;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;font:400 11px "Press Start 2P",monospace;cursor:pointer">Load from .txt</button>
+<input id="loadf" type="file" accept=".txt,text/plain" hidden>
+<span class="hint" id="svmsg">Saves every box on this page so you can load it back next time.</span></div>
+
+<section class="card"><h2>Where you are</h2>
+<div class="grid">
+<div><label for="m">Meditations done</label><input id="m" type="number" min="0" value="0"></div>
+<div><label for="b">Boss kills effective</label><input id="b" type="number" min="0" value="0"></div>
+<div><label for="d">Days played</label><input id="d" type="number" min="0" value="0"></div>
+</div></section>
+
+<section class="card"><h2>Scroll levels</h2><div id="levels"></div></section>
+
+<section class="card"><h2>Tomes</h2>
+<div class="grid">
+<div><label for="tx">Tome of XP level</label><input id="tx" type="number" min="0" value="0"><div class="hint" id="htx"></div></div>
+<div><label for="tw">Tome of Wisdom level</label><input id="tw" type="number" min="0" value="0"><div class="hint" id="htw"></div></div>
+</div>
+<p class="note">Each tome multiplies its total by 1.2 per level (XP and Wisdom only).</p></section>
+
+<section class="card"><h2>Other multipliers (enter yourself)</h2>
+<p class="hint" style="margin:0 0 10px">Type in the total multiplier each source gives you. Leave at 0 if none. XP = tomes x scrolls x Beastmaster x Collections x AP. Gold = scrolls x Beastmaster x Collections x AP. Wisdom = tomes x scrolls x Beastmaster x AP.</p>
+<div class="wrap"><table><thead><tr><th>Source</th><th>XP</th><th>Gold</th><th>Wisdom</th></tr></thead><tbody id="ex"></tbody></table></div></section>
+
+<section class="card"><h2>Your numbers right now</h2>
+<div class="out" id="out"></div>
+<div class="wrap"><table><thead><tr><th>Scroll</th><th>Level</th><th>Contribution</th></tr></thead><tbody id="brk"></tbody></table></div>
+</section>
+
+<section class="card"><h2>What if it were different?</h2>
+<div class="grid" style="grid-template-columns:repeat(3,1fr)">
+<div><label for="s_b">Boss</label><input id="s_b" type="number" min="0" value="10"></div>
+<div><label for="s_d">Days</label><input id="s_d" type="number" min="0" value="10"></div>
+<div><label for="s_m">Meditations</label><input id="s_m" type="number" min="0" value="10"></div>
+</div>
+<div style="max-width:33%;margin-top:12px"><label for="s_st">Steps</label><input id="s_st" type="number" min="1" value="1"></div>
+<div class="wrap" style="margin-top:12px"><table><thead><tr><th>Boss</th><th>Days</th><th>Meditations</th><th>XP</th><th>Gold</th><th>Wisdom</th></tr></thead><tbody id="sw"></tbody></table></div>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id),r2=v=>{const p=Math.abs(v)>=100&&Math.abs(v)<1000?1:2,t=Number(Math.round(v+"e"+p)+"e-"+p);return isNaN(t)?Math.round(v*100)/100:t},pw=Math.pow;
+const TIERS=[[1e6,"M",1e3],[1e9,"B",1e3],[1e12,"T",1e3],[1e15,"Q",1e6]];
+for(let k=1;k<=30;k++)TIERS.push([pw(10,21+6*(k-1)),"Q"+k,1e6]);
+function fmt(n){if(!isFinite(n))return"∞";
+if(n<1e6){const v=Math.abs(n%1)<1e-9?n:r2(n);if(v<1e6)return v.toLocaleString()}
+let i=0;while(i<TIERS.length-1&&n>=TIERS[i+1][0])i++;
+const val=j=>{const v=n/TIERS[j][0];return TIERS[j][2]===1e6&&v>=1000?Math.round(v):r2(v)};
+let v=val(i);if(v>=TIERS[i][2]&&i<TIERS.length-1){i++;v=val(i)}
+return v.toLocaleString()+TIERS[i][1]}
+// t: add-per-med / add-per-boss / add-per-day (fractions added to multiplier), flat (multiplies), special
+const S=[
+{id:"gg",c:"XP",n:"Gradual Growth",cap:5,t:"gg",v:x=>.75+.85*x,h:x=>`adds ${r2(.75+.85*x)} (+25% per meditation)`},
+{id:"mbd",c:"XP",n:"Minimizing Brain Damage",t:"flat",v:x=>1+pw(1.15,x-1),h:x=>`x${r2(1+pw(1.15,x-1))}`},
+{id:"be",c:"XP",n:"Brain Eating",t:"boss",v:x=>.2*x,h:x=>`+${20*x}% per boss kill`},
+{id:"go",c:"XP",n:"Getting Old",t:"day",v:x=>.5*(x+1),h:x=>`+${50*(x+1)}% per day`},
+{id:"sd",c:"XP",n:"Serious Dedication",t:"med",v:x=>.25*(x+3),h:x=>`+${25*(x+3)}% per meditation`},
+{id:"dm",c:"XP",n:"Doing More With Less",cap:40,t:"div",v:x=>1.25*x,h:x=>`level-up XP needed ÷${1.25*x}`},
+{id:"sm",c:"Gold",n:"Skillful Mugging",t:"flat",v:x=>1+.5*pw(1.25,x-1),h:x=>`x${r2(1+.5*pw(1.25,x-1))}`},
+{id:"fr",c:"Gold",n:"Fencing People's Rings",t:"boss",v:x=>.1*x,h:x=>`+${10*x}% per boss kill`},
+{id:"ci",c:"Gold",n:"Compound Interest",t:"day",v:x=>.25+.25*x,h:x=>`+${25+25*x}% per day`},
+{id:"lt",c:"Gold",n:"Long Term Investment",t:"med",v:x=>.3+.2*x,h:x=>`+${30+20*x}% per meditation`},
+{id:"er",c:"Gold",n:"Eating the Rich",t:"bossgold",v:x=>1+.3*x,h:x=>`boss gold x${r2(1+.3*x)}`},
+{id:"ep",c:"Gold",n:"Also Eating the Poor",t:"enemygold",v:x=>1+.3*x,h:x=>`regular enemy gold x${r2(1+.3*x)}`},
+{id:"ii",c:"Wisdom",n:"Insightful Insights",t:"flat",v:x=>1+.5*pw(1.15,x-1),h:x=>`x${r2(1+.5*pw(1.15,x-1))}`},
+{id:"ew",c:"Wisdom",n:"Extracting Wisdom Teeth",t:"boss",v:x=>.01*x,h:x=>`+${x}% per boss kill`},
+{id:"jw",c:"Wisdom",n:"Janet Weiss",t:"day",v:x=>.08+.02*x,h:x=>`+${8+2*x}% per day`},
+{id:"gd",c:"Wisdom",n:"Groundhog Day",t:"med",v:x=>.08+.02*x,h:x=>`+${8+2*x}% per meditation`}
+];
+const lv={};S.forEach(s=>lv[s.id]=0);
+let cat="",html="";
+S.forEach(s=>{if(s.c!==cat){if(cat)html+="</div>";cat=s.c;html+=`<h3>${cat} scrolls</h3><div class="grid lv">`}
+html+=`<div><label for="l_${s.id}">${s.n}${s.cap?` (max ${s.cap})`:""}</label><input id="l_${s.id}" data-id="${s.id}" type="number" min="0" ${s.cap?`max="${s.cap}"`:""} value="0"><div class="hint" id="h_${s.id}"></div></div>`});
+$("levels").innerHTML=html+"</div>";
+$("ex").innerHTML=[["col","Collections"],["bm","Beastmaster 9000"],["ap","AP"]].map(([k,n])=>`<tr><td>${n}</td>`+["XP","Gold","Wisdom"].map(c=>k==="col"&&c==="Wisdom"?"<td>n/a</td>":`<td><input id="e_${k}_${c}" type="number" min="0" step="any" value="0" aria-label="${n} ${c}" style="width:120px"></td>`).join("")+"</tr>").join("");
+const num=id=>Math.max(0,Math.floor(+$(id).value||0));
+function levels(){S.forEach(s=>{let x=Math.max(0,Math.floor(+$("l_"+s.id).value||0));if(s.cap)x=Math.min(x,s.cap);lv[s.id]=x;$("h_"+s.id).textContent=x?s.h(x):"not owned"})}
+function calc(m,b,d){
+const r={XP:1,Gold:1,Wisdom:1,div:1,bossgold:1,enemygold:1,parts:[]};
+const f={XP:1,Gold:1,Wisdom:1};
+S.forEach(s=>{const x=lv[s.id];if(!x)return;let p="";
+if(s.t==="gg"){const a=s.v(x)*(1+.25*m);r.gg=a;p=`+${r2(a)} on top of your other scrolls (base ${r2(s.v(x))} x ${r2(1+.25*m)})`}
+else if(s.t==="boss"){const a=s.v(x)*b;f[s.c]*=1+a;p=`x${fmt(1+a)} (+${fmt(a*100)}% from ${fmt(b)} boss kills)`}
+else if(s.t==="med"||s.t==="day"){const k=s.t==="med"?m:d,a=s.v(x)*k;f[s.c]*=1+a;p=`x${fmt(1+a)} (+${fmt(a*100)}% from ${fmt(k)} ${s.t==="med"?"meditations":"days"})`}
+else if(s.t==="flat"){f[s.c]*=s.v(x);p=`x${fmt(s.v(x))}`}
+else if(s.t==="div"){r.div=s.v(x);p=`÷${s.v(x)}`}
+else if(s.t==="bossgold"){r.bossgold=s.v(x);p=`x${r2(s.v(x))}`}
+else if(s.t==="enemygold"){r.enemygold=s.v(x);p=`x${r2(s.v(x))}`}
+r.parts.push([s.n,x,p])});
+r.XP=f.XP+(r.gg||0);r.Gold*=f.Gold;r.Wisdom*=f.Wisdom;
+r.sXP=r.XP;r.sGold=r.Gold;r.sWis=r.Wisdom;
+const ex=(c,ks)=>ks.reduce((t,k)=>{const el=$("e_"+k+"_"+c),v=el?parseFloat(el.value):0;return v>0?t*v:t},1);
+r.XP=pw(1.2,num("tx"))*r.sXP*ex("XP",["bm","col","ap"]);
+r.Gold=r.sGold*ex("Gold",["bm","col","ap"]);
+r.Wisdom=pw(1.2,num("tw"))*r.sWis*ex("Wisdom",["bm","ap"]);
+return r}
+const st=(v,l)=>`<div class="stat"><b>${v}</b><span>${l}</span></div>`;
+function render(){
+levels();const m=num("m"),b=num("b"),d=num("d"),r=calc(m,b,d);
+const tx=num("tx"),tw=num("tw");$("htx").textContent=tx?`multiplies XP by x${fmt(pw(1.2,tx))}`:"not owned";$("htw").textContent=tw?`multiplies Wisdom by x${fmt(pw(1.2,tw))}`:"not owned";
+let o=st("x"+fmt(r.XP),"XP multiplier")+st("x"+fmt(r.Gold),"Gold multiplier")+st("x"+fmt(r.Wisdom),"Unrealised Wisdom multiplier")+st("x"+fmt(r.sXP),"Scrolls only: XP")+st("x"+fmt(r.sGold),"Scrolls only: Gold")+st("x"+fmt(r.sWis),"Scrolls only: Wisdom");
+if(r.div>1)o+=st("÷"+r.div,"XP needed to level up");
+if(r.bossgold>1)o+=st("x"+r2(r.bossgold),"Boss gold (extra)");
+if(r.enemygold>1)o+=st("x"+r2(r.enemygold),"Regular enemy gold (extra)");
+$("out").innerHTML=o;
+$("brk").innerHTML=r.parts.length?r.parts.map(p=>`<tr><td>${p[0]}</td><td>${p[1]}</td><td>${p[2]}</td></tr>`).join(""):`<tr><td colspan="3">Set a scroll level above 0 to see its effect.</td></tr>`;
+const step=Math.max(1,Math.floor(+$("s_st").value||1)),c=[m,b,d],amt=[num("s_m"),num("s_b"),num("s_d")],pos=amt.filter(v=>v>0);
+const n=pos.length?Math.min(300,Math.ceil(Math.min(...pos)/step)):1;
+let h="";
+for(let i=pos.length?1:0;i<=(pos.length?n:0);i++){const q=c.map((v,j)=>v+Math.round(amt[j]*i/n)),x=calc(q[0],q[1],q[2]);
+h+=`<tr><td>${fmt(q[1])}</td><td>${fmt(q[2])}</td><td>${fmt(q[0])}</td><td>x${fmt(x.XP)}</td><td>x${fmt(x.Gold)}</td><td>x${fmt(x.Wisdom)}</td></tr>`}
+$("sw").innerHTML=h}
+document.querySelectorAll("input,select").forEach(e=>e.addEventListener("input",render));
+render();
+const fields=()=>[...document.querySelectorAll("input[id],select[id]")].filter(e=>e.id!=="loadf");
+$("sv_btn").onclick=()=>{const o={};fields().forEach(e=>o[e.id]=e.value);
+const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({dflCalc:1,data:o},null,1)],{type:"text/plain"}));
+a.download="dragonfist-calculator-save.txt";document.body.appendChild(a);a.click();a.remove();$("svmsg").textContent="Saved. Check your downloads folder."};
+$("ld_btn").onclick=()=>$("loadf").click();
+$("loadf").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+r.onload=()=>{try{const j=JSON.parse(r.result);if(!j.data)throw 0;let n=0;
+fields().forEach(el=>{if(el.id in j.data){el.value=j.data[el.id];n++}});render();$("svmsg").textContent=`Loaded ${n} values.`}catch(x){$("svmsg").textContent="That file couldn't be read. Use a .txt saved from this calculator."}
+e.target.value=""};r.readAsText(f)};
+</script></main></body></html>
